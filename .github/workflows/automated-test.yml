@@ -41,4 +41,4 @@ jobs:
 #        run: npx playwright test GUI/tests/admin/landingPage/visibility.spec.js
 
       - name: Run Playwright tests
-        run: npx playwright test GUI/tests/admin/landingPage/functionality.spec.js
+        run: npx playwright test GUI/tests/tests/admin/landingPage/functionality.spec.js
