@@ -28,6 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./GUI
 
       - name: Install Playwright
         run: npx playwright install
