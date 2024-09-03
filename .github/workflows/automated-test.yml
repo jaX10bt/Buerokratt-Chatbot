@@ -33,12 +33,12 @@ jobs:
         run: npx playwright install
 
 # To run all
-      - name: Run Playwright tests
-        run: npx playwright test GUI/tests/admin/landingPage
+#       - name: Run Playwright tests
+#         run: npx playwright test GUI/tests/admin/landingPage
 
 # To run only one
 #      - name: Run Playwright tests
 #        run: npx playwright test GUI/tests/admin/landingPage/visibility.spec.js
 
-#      - name: Run Playwright tests
-#        run: npx playwright test GUI/tests/admin/landingPage/functionality.spec.js
+      - name: Run Playwright tests
+        run: npx playwright test GUI/tests/admin/landingPage/functionality.spec.js
