@@ -30,6 +30,10 @@ jobs:
         run: npm install --legacy-peer-deps
         working-directory: ./GUI
 
+      - name: Install dependencies PW
+        run: npm install --legacy-peer-deps
+        working-directory: ./GUI/tests
+
       - name: Install Playwright
         run: npx playwright install --with-deps
         working-directory: ./GUI/tests/tests
