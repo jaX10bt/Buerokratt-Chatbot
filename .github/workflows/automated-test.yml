@@ -35,7 +35,7 @@ jobs:
         working-directory: ./GUI/tests
 
       - name: Install Playwright
-        run: npx playwright install --with-deps
+        run: npx playwright install
         working-directory: ./GUI/tests
 
 # To run all
