@@ -31,12 +31,12 @@ jobs:
         working-directory: ./GUI
 
       - name: Install dependencies PW
-        run: npm --legacy-peer-deps
+        run: npm install
         working-directory: ./GUI/tests
 
       - name: Install Playwright
         run: npx playwright install --with-deps
-        working-directory: ./GUI/tests/tests
+        working-directory: ./GUI/tests
 
 # To run all
 #       - name: Run Playwright tests
