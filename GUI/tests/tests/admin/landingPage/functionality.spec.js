@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const adminPage = 'http://localhost:3001'
+const adminPage = 'http://localhost:3001/'
 let response;
 
 test.beforeEach(async ({ page }) => {
