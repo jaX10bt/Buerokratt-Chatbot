@@ -26,8 +26,12 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      # - name: Install dependencies
+      #   run: npm install --legacy-peer-deps
+      #   working-directory: ./GUI
+
+      - name: Run Docker
+        run: docker-compose up
         working-directory: ./GUI
 
       # - name: Install dependencies PW
