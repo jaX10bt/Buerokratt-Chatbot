@@ -31,7 +31,7 @@ jobs:
       #   working-directory: ./GUI
 
       - name: Run Docker
-        run: docker compose up
+        run: docker compose up -d
         working-directory: ./GUI
 
       # - name: Install dependencies PW
