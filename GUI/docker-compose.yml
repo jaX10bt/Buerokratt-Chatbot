@@ -4,6 +4,7 @@ services:
     container_name: buerokratt_chatbot
     build:
       context: .
+      dockerfile: Dockerfile.dev
       target: web
     # entrypoint: "/opt/buerokratt-chatbot/rebuild.sh"
     ports:
