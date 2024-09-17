@@ -1,0 +1,26 @@
+name: Trigger Playwright Tests by Task
+on:
+  project_card:
+    types: [moved] # When a task is moved in the project board
+
+jobs:
+  trigger-tests:
+    runs-on: ubuntu-latest
+    if: github.event.project_card.column_name == 'Acceptance Testing'
+    steps:
+      - name: Fetch task details
+        run: |
+          TASK_URL=${{ github.event.project_card.content_url }}
+          TASK_DESCRIPTION=$(curl -s $TASK_URL | jq -r '.body')
+          TASK_TITLE=$(curl -s $TASK_URL | jq -r '.title')
+
+          # Extract task ID or any relevant task info
+          TASK_ID=$(echo $TASK_TITLE | grep -oP '(T\d+)')
+
+          # Send task info to TDD Playwright repo via repository_dispatch event
+          REPO="buerokratt/TDD-Playwright"
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/$REPO/dispatches \
+            -d '{"event_type": "run-tests", "client_payload": {"task_id": "'$TASK_ID'", "task_description": "'$TASK_DESCRIPTION'"}}'
