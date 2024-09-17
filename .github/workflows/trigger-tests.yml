@@ -1,4 +1,4 @@
-name: Trigger Playwright Tests by Task
+name: Trigger Playwright Tests
 on:
   project_card:
     types: [moved] # When a task is moved in the project board
@@ -14,8 +14,8 @@ jobs:
           TASK_DESCRIPTION=$(curl -s $TASK_URL | jq -r '.body')
           TASK_TITLE=$(curl -s $TASK_URL | jq -r '.title')
 
-          # Send task info to TDD Playwright repo via repository_dispatch event
-          REPO="buerokratt/TDD-Playwright"
+          # Send task details to the Playwright test repo
+          REPO="owner/playwright-repo"
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
