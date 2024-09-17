@@ -1,23 +1,38 @@
 name: Trigger Playwright Tests
 on:
-  project_card:
-    types: [moved] # When a task is moved in the project board
+  workflow_dispatch:
+  issues:
+    types: [edited]
 
 jobs:
   trigger-tests:
     runs-on: ubuntu-latest
-    if: github.event.project_card.column_name == 'Acceptance Testing'
-    steps:
-      - name: Fetch task details
-        run: |
-          TASK_URL=${{ github.event.project_card.content_url }}
-          TASK_DESCRIPTION=$(curl -s $TASK_URL | jq -r '.body')
-          TASK_TITLE=$(curl -s $TASK_URL | jq -r '.title')
 
-          # Send task details to the Playwright test repo
-          REPO="owner/playwright-repo"
+    steps:
+      - name: Extract Task Information and Status
+        id: extract_info
+        run: |
+          TASK_ID=$(jq -r '.issue.id' <<< "${{ toJSON(github.event) }}")
+          TASK_TITLE=$(jq -r '.issue.title' <<< "${{ toJSON(github.event) }}")
+          TASK_DESCRIPTION=$(jq -r '.issue.body' <<< "${{ toJSON(github.event) }}")
+          
+          # Extract the custom 'Status' field value
+          STATUS_FIELD=$(jq -r '.issue.project_card.status' <<< "${{ toJSON(github.event) }}")
+
+          echo "TASK_ID=$TASK_ID" >> $GITHUB_ENV
+          echo "TASK_TITLE=$TASK_TITLE" >> $GITHUB_ENV
+          echo "TASK_DESCRIPTION=$TASK_DESCRIPTION" >> $GITHUB_ENV
+          echo "STATUS_FIELD=$STATUS_FIELD" >> $GITHUB_ENV
+
+      - name: Check if Task is in "Acceptance Testing"
+        if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
+        run: echo "Task is in Acceptance Testing. Proceeding to trigger Playwright tests."
+
+      - name: Trigger Playwright Tests in Test Repository
+        if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
+        run: |
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/$REPO/dispatches \
-            -d '{"event_type": "run-tests", "client_payload": {"task_description": "'$TASK_DESCRIPTION'", "task_title": "'$TASK_TITLE'"}}'
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Authorization: token ${{ secrets.PAT_TO_REPLACE }}" \
+            https://api.github.com/repos/buerokratt/TDD-Playwright/dispatches \
+            -d '{"event_type": "run-tests", "client_payload": {"task_id": "'${{ env.TASK_ID }}'", "task_title": "'${{ env.TASK_TITLE }}'", "task_description": "'${{ env.TASK_DESCRIPTION }}'"}}'
