@@ -2,6 +2,8 @@ name: Test Project Card Events
 on:
   project_card:
     types: [created, moved, deleted, edited]
+  issues :
+    types: [edited]
 
 jobs:
   debug-project-card-event:
