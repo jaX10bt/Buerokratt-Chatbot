@@ -1,33 +1,38 @@
 name: Trigger Playwright Tests
 on:
   workflow_dispatch:
-  issues:
-    types: [edited]
+  project_card:
+    types: [moved]
 
 jobs:
   trigger-tests:
     runs-on: ubuntu-latest
 
     steps:
+      # Step to extract information from the project card
       - name: Extract Task Information and Status
         id: extract_info
         run: |
-          TASK_ID=$(jq -r '.issue.id' <<< "${{ toJSON(github.event) }}")
-          TASK_TITLE=$(jq -r '.issue.title' <<< "${{ toJSON(github.event) }}")
-          TASK_DESCRIPTION=$(jq -r '.issue.body' <<< "${{ toJSON(github.event) }}")
+          TASK_ID=$(jq -r '.project_card.id' <<< "${{ toJSON(github.event) }}")
+          TASK_TITLE=$(jq -r '.project_card.note' <<< "${{ toJSON(github.event) }}")
           
-          # Extract the custom 'Status' field value
-          STATUS_FIELD=$(jq -r '.issue.project_card.status' <<< "${{ toJSON(github.event) }}")
+          # Extract the column name (status field)
+          STATUS_FIELD=$(jq -r '.project_card.column_name' <<< "${{ toJSON(github.event) }}")
+          
+          # Use the note field as task description
+          TASK_DESCRIPTION=$(jq -r '.project_card.note' <<< "${{ toJSON(github.event) }}")
 
           echo "TASK_ID=$TASK_ID" >> $GITHUB_ENV
           echo "TASK_TITLE=$TASK_TITLE" >> $GITHUB_ENV
-          echo "TASK_DESCRIPTION=$TASK_DESCRIPTION" >> $GITHUB_ENV
           echo "STATUS_FIELD=$STATUS_FIELD" >> $GITHUB_ENV
+          echo "TASK_DESCRIPTION=$TASK_DESCRIPTION" >> $GITHUB_ENV
 
+      # Check if the task is in the "Acceptance Testing" status
       - name: Check if Task is in "Acceptance Testing"
         if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
         run: echo "Task is in Acceptance Testing. Proceeding to trigger Playwright tests."
 
+      # Trigger Playwright tests in the testing repository
       - name: Trigger Playwright Tests in Test Repository
         if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
         run: |
