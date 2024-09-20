@@ -1,0 +1,12 @@
+name: Test Project Card Events
+on:
+  project_card:
+    types: [created, moved, deleted, edited]
+
+jobs:
+  debug-project-card-event:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Output Event Payload
+        run: echo "${{ toJSON(github.event) }}"
