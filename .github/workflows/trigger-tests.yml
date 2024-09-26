@@ -1,43 +1,46 @@
 name: Trigger Playwright Tests
+
 on:
   workflow_dispatch:
-  project_card:
-    types: [moved]
+  projects_v2_item:
+    types:
+      - edited
 
 jobs:
   trigger-tests:
     runs-on: ubuntu-latest
 
     steps:
-      # Step to extract information from the project card
+      # Step to extract information from the project item
       - name: Extract Task Information and Status
         id: extract_info
         run: |
-          TASK_ID=$(jq -r '.project_card.id' <<< "${{ toJSON(github.event) }}")
-          TASK_TITLE=$(jq -r '.project_card.note' <<< "${{ toJSON(github.event) }}")
+          # Extract project item node ID
+          TASK_ID=$(jq -r '.projects_v2_item.node_id' <<< "${{ toJSON(github.event) }}")
           
-          # Extract the column name (status field)
-          STATUS_FIELD=$(jq -r '.project_card.column_name' <<< "${{ toJSON(github.event) }}")
+          # Extract the title of the linked content (issue or pull request)
+          TASK_TITLE=$(jq -r '.projects_v2_item.content_node.title' <<< "${{ toJSON(github.event) }}")
           
-          # Use the note field as task description
-          TASK_DESCRIPTION=$(jq -r '.project_card.note' <<< "${{ toJSON(github.event) }}")
+          # Extract the value of the changed custom field (assuming it's called 'status')
+          CUSTOM_FIELD_NAME=$(jq -r '.changes.custom_field_name' <<< "${{ toJSON(github.event) }}")
+          CUSTOM_FIELD_VALUE=$(jq -r '.changes.custom_field_value' <<< "${{ toJSON(github.event) }}")
 
           echo "TASK_ID=$TASK_ID" >> $GITHUB_ENV
           echo "TASK_TITLE=$TASK_TITLE" >> $GITHUB_ENV
-          echo "STATUS_FIELD=$STATUS_FIELD" >> $GITHUB_ENV
-          echo "TASK_DESCRIPTION=$TASK_DESCRIPTION" >> $GITHUB_ENV
+          echo "CUSTOM_FIELD_NAME=$CUSTOM_FIELD_NAME" >> $GITHUB_ENV
+          echo "CUSTOM_FIELD_VALUE=$CUSTOM_FIELD_VALUE" >> $GITHUB_ENV
 
-      # Check if the task is in the "Acceptance Testing" status
-      - name: Check if Task is in "Acceptance Testing"
-        if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
+      # Check if the custom field "Status" has been set to "Acceptance Testing"
+      - name: Check if Custom Field is "Acceptance Testing"
+        if: ${{ env.CUSTOM_FIELD_NAME == 'Status' && env.CUSTOM_FIELD_VALUE == 'Acceptance Testing' }}
         run: echo "Task is in Acceptance Testing. Proceeding to trigger Playwright tests."
 
       # Trigger Playwright tests in the testing repository
       - name: Trigger Playwright Tests in Test Repository
-        if: ${{ env.STATUS_FIELD == 'Acceptance Testing' }}
+        if: ${{ env.CUSTOM_FIELD_NAME == 'Status' && env.CUSTOM_FIELD_VALUE == 'Acceptance Testing' }}
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github.everest-preview+json" \
             -H "Authorization: token ${{ secrets.PAT_TO_REPLACE }}" \
             https://api.github.com/repos/jaX10bt/TDD-Playwright/dispatches \
-            -d '{"event_type": "run-tests", "client_payload": {"task_id": "'${{ env.TASK_ID }}'", "task_title": "'${{ env.TASK_TITLE }}'", "task_description": "'${{ env.TASK_DESCRIPTION }}'"}}'
+            -d '{"event_type": "run-tests", "client_payload": {"task_id": "'${{ env.TASK_ID }}'", "task_title": "'${{ env.TASK_TITLE }}'"}}'
